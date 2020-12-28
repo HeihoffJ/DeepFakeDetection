@@ -1,0 +1,35 @@
+#!/usr/bin/bash
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=20
+#SBATCH -t 2:00:00
+#SBATCH -J tunnel
+#SBATCH -o jupyter-log-%J.txt
+#SBATCH --mail-type=BEGIN
+#SBATCH --mail-type=END
+## get tunneling info
+XDG_RUNTIME_DIR=""
+ipnport=$(shuf -i8000-9999 -n1)
+ipnip=$(hostname -i)
+
+echo -e "
+    Copy/Paste this in your local terminal to ssh tunnel with remote
+    -----------------------------------------------------------------
+    ssh -4 -N -L $ipnport:$ipnip:$ipnport hstr_heihoffj@elwe1.rarp-kl.de
+    -----------------------------------------------------------------
+
+    Then open a browser on your local machine to the following address
+    ------------------------------------------------------------------
+    localhost:$ipnport  (prefix w/ https:// if using password)
+    ------------------------------------------------------------------
+    "
+
+
+## print tunneling instructions to jupyter-log
+## start an ipcluster instance and launch jupyter server
+module load anaconda3 
+conda create -n juypter_env -y numpy opencv matplotlib
+eval $(conda shell.bash hook)
+##conda init bash
+source activate jupyter_env
+#conda activate jupyter_env
+jupyter-notebook --no-browser --port=$ipnport --ip=$ipnip
